@@ -1,0 +1,68 @@
+
+import tkinter as tk
+import random
+
+CELL_SIZE = 50
+ROWS, COLS = 10, 10
+player_row, player_col = 0, 0
+OBSTACLE_COUNT = 20
+obstacles = []
+
+def generate_obstacles():
+    all_cells = [(r, c) for r in range(ROWS) for c in range(COLS)
+                 if (r, c) != (player_row, player_col)]
+    max_available = len(all_cells)
+    if OBSTACLE_COUNT > max_available:
+        raise ValueError("障碍物数量超过可用格子数量")
+    chosen = random.sample(all_cells, OBSTACLE_COUNT)
+    obstacles.clear()
+    obstacles.extend(chosen)
+
+def draw_board():
+    canvas.delete("all")
+    for r in range(ROWS):
+        for c in range(COLS):
+            x1, y1 = c * CELL_SIZE, r * CELL_SIZE
+            x2, y2 = x1 + CELL_SIZE, y1 + CELL_SIZE
+            canvas.create_rectangle(x1, y1, x2, y2, outline="gray")
+    for (r, c) in obstacles:
+        x1, y1 = c * CELL_SIZE, r * CELL_SIZE
+        x2, y2 = x1 + CELL_SIZE, y1 + CELL_SIZE
+        canvas.create_rectangle(x1, y1, x2, y2, fill="black")
+    x1, y1 = player_col * CELL_SIZE, player_row * CELL_SIZE
+    x2, y2 = x1 + CELL_SIZE, y1 + CELL_SIZE
+    canvas.create_rectangle(x1, y1, x2, y2, fill="red")
+
+def move_player(event):
+    global player_row, player_col
+    dr, dc = 0, 0
+    if event.keysym == "Up":
+        dr = -1
+    elif event.keysym == "Down":
+        dr = 1
+    elif event.keysym == "Left":
+        dc = -1
+    elif event.keysym == "Right":
+        dc = 1
+    new_r = player_row + dr
+    new_c = player_col + dc
+    if 0 <= new_r < ROWS and 0 <= new_c < COLS and (new_r, new_c) not in obstacles:
+        player_row, player_col = new_r, new_c
+        draw_board()
+
+def restart_game():
+    global player_row, player_col
+    player_row, player_col = 0, 0
+    generate_obstacles()
+    draw_board()
+
+root = tk.Tk()
+root.title("走格子小游戏")
+canvas = tk.Canvas(root, width=COLS * CELL_SIZE, height=ROWS * CELL_SIZE)
+canvas.pack()
+generate_obstacles()
+draw_board()
+root.bind("<Key>", move_player)
+btn_restart = tk.Button(root, text="重新开始", command=restart_game)
+btn_restart.pack(pady=10)
+root.mainloop()
