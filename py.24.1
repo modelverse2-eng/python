@@ -1,0 +1,32 @@
+“”“给定n对括号，编写一个函数来生成所有形成良好的括号的组合。”“”
+
+
+
+“”“思路：从空串开始，用 DFS 枚举所有括号串，结合剪枝提高效率，在每一步只允许合法的扩展，直到放满 n 对括号。“”“
+
+
+class Solution:
+    def generateParenthesis(self, n: int) -> List[str]:
+        res: List[str] = []
+        path: List[str] = []  # 用 list 存字符，最后 join，比字符串拼接更快
+
+        def backtrack(left: int, right: int):
+            # 结束条件：左右都用完
+            if left == n and right == n:
+                res.append(''.join(path))
+                return
+
+            # 剪枝1：还能放左括号
+            if left < n:
+                path.append('(')
+                backtrack(left + 1, right)
+                path.pop()
+
+            # 剪枝2：只能在右括号数 < 左括号数时放右括号
+            if right < left:
+                path.append(')')
+                backtrack(left, right + 1)
+                path.pop()
+
+        backtrack(0, 0)
+        return res
